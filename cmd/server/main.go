@@ -20,6 +20,6 @@ func main() {
 
 	fmt.Println("🚀 Сервер запущен на http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
-		fmt.Printf("Ошибка запуска сервера: %v", err)
+		fmt.Printf("Ошибка запуска сервера %v", err)
 	}
 }
