@@ -1,13 +1,28 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"usd-rub-tracker/cmd/connection"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
+
+	ctx := context.Background()
+	pool, err := connection.CreatConnecton(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatal("БД недоступна\n", err)
+	}
+	fmt.Println("db connect!")
+
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello world👋"))
@@ -22,4 +37,5 @@ func main() {
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		fmt.Printf("Ошибка запуска сервера %v", err)
 	}
+
 }
