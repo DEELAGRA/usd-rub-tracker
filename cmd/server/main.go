@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"usd-rub-tracker/cmd/connection"
+	database "usd-rub-tracker/internal/db"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -13,7 +13,7 @@ import (
 func main() {
 
 	ctx := context.Background()
-	pool, err := connection.CreatConnecton(ctx)
+	pool, err := database.CreatConnecton(ctx)
 	if err != nil {
 		panic(err)
 	}
