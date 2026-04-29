@@ -13,15 +13,22 @@ import (
 func main() {
 
 	ctx := context.Background()
-	pool, err := database.CreatConnecton(ctx)
+	pool, err := database.CreatConnection(ctx)
 	if err != nil {
 		panic(err)
 	}
 	defer pool.Close()
 	if err := pool.Ping(ctx); err != nil {
-		log.Fatal("БД недоступна\n", err)
+		log.Fatalf("БД недоступна\n %v", err)
 	}
 	fmt.Println("db connect!")
+	/*var rate models.RateModels
+	rate.Rate = 16.4
+	rate.Date = time.Now()
+	rate.Created_at = time.Now()
+	if err := database.SaveRate(ctx, pool, rate); err != nil {
+		panic(err)
+	} */
 
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +42,7 @@ func main() {
 
 	fmt.Println("🚀 Сервер запущен на http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
-		fmt.Printf("Ошибка запуска сервера %v", err)
+		log.Printf("Ошибка запуска сервера %v\n", err)
 	}
 
 }
