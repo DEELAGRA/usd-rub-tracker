@@ -25,7 +25,7 @@ func main() {
 	}
 	fmt.Println("db connect!")
 	var rate models.RateModels
-	rate.Rates = 16.4
+	rate.Rate = 16.4
 	rate.Date = time.Now()
 	rate.Created_at = time.Now()
 	if err := database.SaveRate(ctx, pool, rate); err != nil {

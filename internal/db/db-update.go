@@ -12,6 +12,6 @@ func SaveRate(ctx context.Context, pool *pgxpool.Pool, rates models.RateModels) 
  	INSERT INTO rates(rate, date, created_at)
  	VALUES($1,$2,$3)
  	`
-	_, err := pool.Exec(ctx, sqlQuery, rates.Rates, rates.Date, rates.Created_at)
+	_, err := pool.Exec(ctx, sqlQuery, rates.Rate, rates.Date, rates.Created_at)
 	return err
 }
