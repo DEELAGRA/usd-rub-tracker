@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 	database "usd-rub-tracker/internal/db"
+	"usd-rub-tracker/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -22,6 +24,13 @@ func main() {
 		log.Fatal("БД недоступна\n", err)
 	}
 	fmt.Println("db connect!")
+	var rate models.RateModels
+	rate.Rates = 16.4
+	rate.Date = time.Now()
+	rate.Created_at = time.Now()
+	if err := database.SaveRate(ctx, pool, rate); err != nil {
+		panic(err)
+	}
 
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
