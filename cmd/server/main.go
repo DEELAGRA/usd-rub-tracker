@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	cbr "usd-rub-tracker/internal/api/cbr"
 	database "usd-rub-tracker/internal/db"
 
 	"github.com/go-chi/chi/v5"
@@ -15,13 +16,12 @@ func main() {
 	ctx := context.Background()
 	pool, err := database.CreatConnection(ctx)
 	if err != nil {
-		panic(err)
+		log.Printf("БД не подключена: %v", err)
 	}
 	defer pool.Close()
 	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("БД недоступна\n %v", err)
+		log.Printf("БД недоступна\n %v", err)
 	}
-	fmt.Println("db connect!")
 	/*var rate models.RateModels
 	rate.Rate = 16.4
 	rate.Date = time.Now()
@@ -39,6 +39,11 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status": "ok"}`))
 	})
+	usd, err := cbr.FetchUSDRAte(ctx)
+	if err != nil {
+		log.Printf("Ошибка при переводе данных: %v", err)
+	}
+	fmt.Println(usd)
 
 	fmt.Println("🚀 Сервер запущен на http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
