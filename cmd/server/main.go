@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 	cbr "usd-rub-tracker/internal/api/cbr"
 	database "usd-rub-tracker/internal/db"
+	"usd-rub-tracker/pkg/models"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -18,17 +20,27 @@ func main() {
 	if err != nil {
 		log.Printf("БД не подключена: %v", err)
 	}
+
 	defer pool.Close()
 	if err := pool.Ping(ctx); err != nil {
 		log.Printf("БД недоступна\n %v", err)
 	}
-	/*var rate models.RateModels
-	rate.Rate = 16.4
-	rate.Date = time.Now()
-	rate.Created_at = time.Now()
+
+	usd, err := cbr.FetchUSDRAte(ctx)
+	if err != nil {
+		log.Printf("Ошибка при переводе данных: %v", err)
+	}
+	fmt.Println(usd)
+
+	rate := models.RateModels{
+		Rate:      usd,
+		Date:      time.Now(),
+		CreatedAt: time.Now(),
+	}
+
 	if err := database.SaveRate(ctx, pool, rate); err != nil {
-		panic(err)
-	} */
+		log.Printf("Ошибка записи в db: %v", err)
+	}
 
 	r := chi.NewRouter()
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -39,11 +51,6 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status": "ok"}`))
 	})
-	usd, err := cbr.FetchUSDRAte(ctx)
-	if err != nil {
-		log.Printf("Ошибка при переводе данных: %v", err)
-	}
-	fmt.Println(usd)
 
 	fmt.Println("🚀 Сервер запущен на http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
