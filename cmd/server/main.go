@@ -31,7 +31,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 func main() {
 
 	ctx := context.Background()
-	pool, err := database.CreateConnection(ctx)
+	pool, err := database.CreatConnection(ctx)
 	if err != nil {
 		log.Printf("БД не подключена: %v", err)
 	}
