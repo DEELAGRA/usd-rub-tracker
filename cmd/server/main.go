@@ -28,7 +28,7 @@ func main() {
 		log.Printf("БД недоступна\n %v", err)
 	}
 
-	ticker := time.NewTicker(30 * time.Hour)
+	ticker := time.NewTicker(1 * time.Hour)
 	go func() {
 		for range ticker.C {
 			usd, err := cbr.FetchUSDRAte(ctx)

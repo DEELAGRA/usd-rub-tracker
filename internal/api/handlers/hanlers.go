@@ -46,25 +46,26 @@ func (h *Handler) GetLastRateHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h *Handler) GetAllRateHandler(w http.ResponseWriter, r *http.Request) {
-	var rate models.RateModelsDTO
+
 	daysSTR := r.URL.Query().Get("days")
 	if daysSTR == "" {
-		msg := "Прислали пусто квери параметр days"
+		msg := "Прислали пустой квери параметр days"
 		w.Write([]byte(msg))
 		return
 	}
 	days, err := strconv.Atoi(daysSTR)
 	if err != nil {
-		msg := "invalid query parameter 'days', only accept 'int'" + err.Error()
+		msg := "invalid query parameter 'days', only accept 'int' " + err.Error()
 		w.Write([]byte(msg))
 		return
 	}
 
 	if days < 1 || days > 365 {
-		msg := "invalid query parameter 'days', from 1 to 365" + err.Error()
+		msg := "invalid query parameter 'days', from 1 to 365"
 		w.Write([]byte(msg))
 		return
 	}
+
 	sqlQuery := `
 	SELECT rate, date
 	FROM rates
@@ -77,6 +78,25 @@ func (h *Handler) GetAllRateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer row.Close()
 
+	var rate []models.RateModelsDTO
+	for row.Next() {
+		var r models.RateModelsDTO
+		if err := row.Scan(&r.Rate, &r.Date); err != nil {
+			log.Printf("Scan failed: %v", err)
+			msg := "Scan failed: " + err.Error()
+			w.Write([]byte(msg))
+			return
+		}
+		rate = append(rate, r)
+
+	}
+
+	if err := row.Err(); err != nil {
+		log.Printf("Iteration error: %v", err)
+		msg := "iteration error:" + err.Error()
+		w.Write([]byte(msg))
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rate)
 }
