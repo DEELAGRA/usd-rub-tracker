@@ -14,11 +14,24 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 )
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		
+			if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+			next.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 
 	ctx := context.Background()
-	pool, err := database.CreatConnection(ctx)
+	pool, err := database.CreateConnection(ctx)
 	if err != nil {
 		log.Printf("БД не подключена: %v", err)
 	}
@@ -47,16 +60,21 @@ func main() {
 			}
 		}
 	}()
+	
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(corsMiddleware)
 
 	ratesHandler := handlers.New(pool)
 	ratesHandler.Routes(r)
 
-	r.Mount("/api", r)
-
+	
+	
+	
+	
 	fmt.Println("🚀 Сервер запущен на http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Printf("Ошибка запуска сервера %v\n", err)
