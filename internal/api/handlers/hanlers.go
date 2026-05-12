@@ -10,12 +10,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-func respondError (w http.ResponseWriter, message string, code int){
-	w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(code)
-    json.NewEncoder(w).Encode(map[string]string{"error": message})
-}
 
+func respondError(w http.ResponseWriter, message string, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(map[string]string{"error": message})
+}
 
 type Handler struct {
 	pool *pgxpool.Pool
@@ -28,7 +28,7 @@ func New(pool *pgxpool.Pool) *Handler {
 func (h *Handler) Routes(r chi.Router) {
 	r.Get("/api/v1/rates/current", h.GetLastRateHandler)
 	r.Get("/api/v1/rates/history", h.GetAllRateHandler)
-	r.Get("/", h.HelloHandler)
+	r.Get("/hello", h.HelloHandler)
 }
 
 func (h *Handler) HelloHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,17 +57,17 @@ func (h *Handler) GetAllRateHandler(w http.ResponseWriter, r *http.Request) {
 
 	daysSTR := r.URL.Query().Get("days")
 	if daysSTR == "" {
-		respondError(w, "invalid invalid query parameter 'days'", http.StatusInternalServerError)
+		respondError(w, "invalid invalid query parameter 'days'", http.StatusBadRequest)
 		return
 	}
 	days, err := strconv.Atoi(daysSTR)
 	if err != nil {
-		respondError(w, "Couldn't convert days to integer", http.StatusInternalServerError)
+		respondError(w, "Couldn't convert days to integer", http.StatusBadRequest)
 		return
 	}
 
 	if days < 1 || days > 365 {
-		respondError(w, "missing query parameter 'days'. from 1 to 365", http.StatusInternalServerError)
+		respondError(w, "missing query parameter 'days'. from 1 to 365", http.StatusBadRequest)
 		return
 	}
 
@@ -80,6 +80,8 @@ func (h *Handler) GetAllRateHandler(w http.ResponseWriter, r *http.Request) {
 	row, err := h.pool.Query(r.Context(), sqlQuery, days)
 	if err != nil {
 		log.Printf("Ошибка: Unable to execute query: %v", err)
+		respondError(w, "database error", http.StatusInternalServerError)
+		return
 	}
 	defer row.Close()
 
@@ -98,7 +100,7 @@ func (h *Handler) GetAllRateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Iteration error: %v", err)
 		respondError(w, "iterarion error", http.StatusBadRequest)
 		return
-		
+
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rate)

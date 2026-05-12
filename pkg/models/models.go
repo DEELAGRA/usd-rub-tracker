@@ -4,12 +4,12 @@ import "time"
 
 type RateModels struct {
 	ID        int       `json:"ID"`
-	Rate      float64   `json:"Rate"`
-	Date      time.Time `json:"Date"`
-	CreatedAt time.Time `json:"CreatedAt"`
+	Rate      float64   `json:"rate"`
+	Date      time.Time `json:"date"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type RateModelsDTO struct {
-	Rate float64   `json:"Rate"`
-	Date time.Time `json:"Date"`
+	Rate float64   `json:"rate"`
+	Date time.Time `json:"date"`
 }
