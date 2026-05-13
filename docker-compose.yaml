@@ -3,10 +3,11 @@ version: '3.5'
 services:
   postgres:
     container_name: postgres_container
-    image: postgres
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: my_User
       POSTGRES_PASSWORD: qqpp
+      POSTGRES_DB: rates  # ← Добавь базу данных
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
@@ -25,9 +26,23 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
       - pgadmin:/var/lib/pgadmin
-
     ports:
-      - 8080:80
+      - 8081:80  # ← Исправлено: 8081 вместо 8080
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  app:  # ← Твой Go-сервер
+    container_name: usd_rub_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://my_User:qqpp@postgres:5432/rates?sslmode=disable
+    depends_on:
+      - postgres
     networks:
       - postgres
     restart: unless-stopped
@@ -37,5 +52,5 @@ networks:
     driver: bridge
 
 volumes:
-    postgres:
-    pgadmin:
+  postgres:
+  pgadmin:

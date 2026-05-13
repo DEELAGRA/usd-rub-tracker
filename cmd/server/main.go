@@ -9,7 +9,6 @@ import (
 	cbr "usd-rub-tracker/internal/api/cbr"
 	"usd-rub-tracker/internal/api/handlers"
 	database "usd-rub-tracker/internal/db"
-	"usd-rub-tracker/pkg/models"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
@@ -28,23 +27,11 @@ func main() {
 		log.Printf("БД недоступна\n %v", err)
 	}
 
-	ticker := time.NewTicker(1 * time.Hour)
+	cbr.FetchUSDRAteSave(ctx, pool)
+	ticker := time.NewTicker(6 * time.Hour)
 	go func() {
 		for range ticker.C {
-			usd, err := cbr.FetchUSDRAte(ctx)
-			if err != nil {
-				log.Printf("Ошибка при переводе данных: %v", err)
-			}
-
-			rate := models.RateModels{
-				Rate:      usd,
-				Date:      time.Now(),
-				CreatedAt: time.Now(),
-			}
-
-			if err := database.SaveRate(ctx, pool, rate); err != nil {
-				log.Printf("Ошибка записи в db: %v", err)
-			}
+			cbr.FetchUSDRAteSave(ctx, pool)
 		}
 	}()
 
